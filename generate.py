@@ -239,21 +239,27 @@ def build_trend_svg(hist):
     # 세로 주차 라벨.
     for i, s in enumerate(snaps):
         parts.append(f'<text x="{x(i):.1f}" y="{vb_h - 9:.0f}" class="xlab">{s["date"][5:]}</text>')
-    # 종목별 라인 + 점.
+    # 라인이 좌→우로 그려지는 시간(초). 점은 이 흐름에 맞춰 순서대로 등장.
+    draw_dur = 1.2
+
+    # 종목별 라인 + 점. (점은 주차 인덱스 i를 보존해 등장 딜레이 계산)
     for stock in stocks:
         pts = []
         for i, s in enumerate(snaps):
             rk = next((e["rank"] for e in s["ranks"] if e["stock"] == stock), None)
             if rk is not None:
-                pts.append((x(i), y(rk)))
+                pts.append((i, x(i), y(rk)))
         if not pts:
             continue
         c = color[stock]
         if len(pts) >= 2:
-            poly = " ".join(f"{px:.1f},{py:.1f}" for px, py in pts)
-            parts.append(f'<polyline points="{poly}" fill="none" stroke="{c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>')
-        for px, py in pts:
-            parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="3.5" fill="{c}"/>')
+            poly = " ".join(f"{px:.1f},{py:.1f}" for _, px, py in pts)
+            # pathLength="1" → dash 애니메이션을 길이와 무관하게 정규화.
+            parts.append(f'<polyline class="line" pathLength="1" points="{poly}" fill="none" stroke="{c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>')
+        for i, px, py in pts:
+            frac = 0 if W <= 1 else i / (W - 1)
+            delay = 0.15 + frac * draw_dur
+            parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="3.5" fill="{c}" style="animation-delay:{delay:.2f}s"/>')
     parts.append('</svg>')
 
     legend = '<div class="legend">' + "".join(
@@ -293,6 +299,14 @@ RANK_CSS = """
   .trend .grid { stroke:var(--line); stroke-width:1; }
   .trend .ylab { fill:var(--txt-dim); font-size:10px; text-anchor:end; font-family:'Bebas Neue',sans-serif; }
   .trend .xlab { fill:var(--txt-dim); font-size:9px; text-anchor:middle; }
+  .trend .line { stroke-dasharray:1; stroke-dashoffset:1; animation:draw 1.2s ease forwards; }
+  .trend circle { opacity:0; transform-box:fill-box; transform-origin:center; animation:pop .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+  @keyframes draw { to { stroke-dashoffset:0; } }
+  @keyframes pop { 0% { opacity:0; transform:scale(.2); } 60% { opacity:1; transform:scale(1.35); } 100% { opacity:1; transform:scale(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .trend .line { animation:none; stroke-dashoffset:0; }
+    .trend circle { animation:none; opacity:1; transform:none; }
+  }
   .legend { display:flex; flex-wrap:wrap; gap:9px 14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
   .lg { font-size:11.5px; color:var(--txt-dim); display:inline-flex; align-items:center; gap:5px; }
   .lg i { width:11px; height:3px; border-radius:2px; display:inline-block; }

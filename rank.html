@@ -40,6 +40,14 @@
   .trend .grid { stroke:var(--line); stroke-width:1; }
   .trend .ylab { fill:var(--txt-dim); font-size:10px; text-anchor:end; font-family:'Bebas Neue',sans-serif; }
   .trend .xlab { fill:var(--txt-dim); font-size:9px; text-anchor:middle; }
+  .trend .line { stroke-dasharray:1; stroke-dashoffset:1; animation:draw 1.2s ease forwards; }
+  .trend circle { opacity:0; transform-box:fill-box; transform-origin:center; animation:pop .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+  @keyframes draw { to { stroke-dashoffset:0; } }
+  @keyframes pop { 0% { opacity:0; transform:scale(.2); } 60% { opacity:1; transform:scale(1.35); } 100% { opacity:1; transform:scale(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .trend .line { animation:none; stroke-dashoffset:0; }
+    .trend circle { animation:none; opacity:1; transform:none; }
+  }
   .legend { display:flex; flex-wrap:wrap; gap:9px 14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
   .lg { font-size:11.5px; color:var(--txt-dim); display:inline-flex; align-items:center; gap:5px; }
   .lg i { width:11px; height:3px; border-radius:2px; display:inline-block; }
@@ -61,14 +69,14 @@
   <table class="rank-table">
     <thead><tr><th>순위</th><th>종목</th><th>수익률</th><th>전주대비</th></tr></thead>
     <tbody>
-    <tr><td class="c-rank">🥇 1</td><td class="c-stock"><b>현대차</b><span class="mem">성○</span></td><td class="c-rate up">+152.35%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">🥈 2</td><td class="c-stock"><b>신세계</b><span class="mem">정○</span></td><td class="c-rate up">+103.97%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">🥉 3</td><td class="c-stock"><b>이노스페이스</b><span class="mem">영○</span></td><td class="c-rate up">+37.82%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">4</td><td class="c-stock"><b>호텔신라</b><span class="mem">상○</span></td><td class="c-rate up">+23.32%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">5</td><td class="c-stock"><b>KB금융</b><span class="mem">주○</span></td><td class="c-rate up">+20.78%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">6</td><td class="c-stock"><b>NAVER</b><span class="mem">기○</span></td><td class="c-rate up">+1.27%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">7</td><td class="c-stock"><b>오스코텍</b><span class="mem">윤○</span></td><td class="c-rate down">−3.37%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
-    <tr><td class="c-rank">8</td><td class="c-stock"><b>카카오</b><span class="mem">필○</span></td><td class="c-rate down">−28.55%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">🥇 1</td><td class="c-stock"><b>현대차</b><span class="mem">성○</span></td><td class="c-rate up">+169.50%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">🥈 2</td><td class="c-stock"><b>신세계</b><span class="mem">정○</span></td><td class="c-rate up">+101.62%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">🥉 3</td><td class="c-stock"><b>이노스페이스</b><span class="mem">영○</span></td><td class="c-rate up">+38.09%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">4</td><td class="c-stock"><b>호텔신라</b><span class="mem">상○</span></td><td class="c-rate up">+22.87%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">5</td><td class="c-stock"><b>KB금융</b><span class="mem">주○</span></td><td class="c-rate up">+21.50%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">6</td><td class="c-stock"><b>NAVER</b><span class="mem">기○</span></td><td class="c-rate up">+15.59%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">7</td><td class="c-stock"><b>오스코텍</b><span class="mem">윤○</span></td><td class="c-rate down">−3.02%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">8</td><td class="c-stock"><b>카카오</b><span class="mem">필○</span></td><td class="c-rate down">−25.25%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
     </tbody>
   </table>
 
@@ -92,21 +100,21 @@
 <line x1="30" y1="184.0" x2="210" y2="184.0" class="grid"/>
 <text x="22" y="187.0" class="ylab">8</text>
 <text x="120.0" y="203" class="xlab">05-29</text>
-<circle cx="120.0" cy="16.0" r="3.5" fill="#ff4d6d"/>
-<circle cx="120.0" cy="40.0" r="3.5" fill="#4d8dff"/>
-<circle cx="120.0" cy="64.0" r="3.5" fill="#f5c451"/>
-<circle cx="120.0" cy="88.0" r="3.5" fill="#3ddc97"/>
-<circle cx="120.0" cy="112.0" r="3.5" fill="#b78bff"/>
-<circle cx="120.0" cy="136.0" r="3.5" fill="#ff9f43"/>
-<circle cx="120.0" cy="160.0" r="3.5" fill="#5ad1e6"/>
-<circle cx="120.0" cy="184.0" r="3.5" fill="#e85d9e"/>
+<circle cx="120.0" cy="16.0" r="3.5" fill="#ff4d6d" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="40.0" r="3.5" fill="#4d8dff" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="64.0" r="3.5" fill="#f5c451" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="88.0" r="3.5" fill="#3ddc97" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="112.0" r="3.5" fill="#b78bff" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="136.0" r="3.5" fill="#ff9f43" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="160.0" r="3.5" fill="#5ad1e6" style="animation-delay:0.15s"/>
+<circle cx="120.0" cy="184.0" r="3.5" fill="#e85d9e" style="animation-delay:0.15s"/>
 </svg>
 <div class="legend"><span class="lg"><i style="background:#ff4d6d"></i>현대차</span><span class="lg"><i style="background:#4d8dff"></i>신세계</span><span class="lg"><i style="background:#f5c451"></i>이노스페이스</span><span class="lg"><i style="background:#3ddc97"></i>호텔신라</span><span class="lg"><i style="background:#b78bff"></i>KB금융</span><span class="lg"><i style="background:#ff9f43"></i>NAVER</span><span class="lg"><i style="background:#5ad1e6"></i>오스코텍</span><span class="lg"><i style="background:#e85d9e"></i>카카오</span></div>
     <div class="note">이번 주가 기준선이에요. 다음 주부터 순위 선이 이어집니다 🌱</div>
   </div>
 
   <div class="foot">매주 월요일 자동 갱신 · 순위는 수익률 기준 📊</div>
-  <div class="auto-stamp">자동 갱신: 2026-05-29 18:15 KST</div>
+  <div class="auto-stamp">자동 갱신: 2026-05-29 18:29 KST</div>
 
 </div>
 </body>
