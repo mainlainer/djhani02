@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html rank.html history.json
           if git diff --cached --quiet; then
             echo "변경 없음 — 시세 동일"
           else

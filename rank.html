@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>순위 변동 · 2026.05.29</title>
+<meta property="og:title" content="순위 변동 2026.05.29">
+<meta property="og:description" content="우리 모임 종목별 주차 순위 변동">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --bg:#0d1117; --panel:#161b22; --panel-2:#1c232d; --line:#2a313c; --txt:#e7ecf3; --txt-dim:#8b96a5; --up:#ff4d6d; --down:#4d8dff; --gold:#f5c451; }
+  body { background: radial-gradient(1200px 600px at 80% -10%, rgba(245,196,81,.06), transparent 60%), radial-gradient(900px 500px at -10% 110%, rgba(77,141,255,.06), transparent 60%), var(--bg); font-family:'IBM Plex Sans KR',sans-serif; color:var(--txt); min-height:100vh; display:flex; justify-content:center; padding:32px 18px 56px; }
+  .wrap { width:100%; max-width:560px; }
+  .top-label { font-size:12px; letter-spacing:.22em; color:var(--txt-dim); text-transform:uppercase; margin-bottom:6px; }
+  .title { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:.95; letter-spacing:.02em; }
+  .title .kr { font-family:'IBM Plex Sans KR'; font-weight:700; font-size:24px; display:block; letter-spacing:-.01em; margin-top:4px; }
+  .date { font-size:12px; color:var(--txt-dim); margin-top:8px; }
+  .nav { margin:14px 0 24px; display:flex; gap:8px; flex-wrap:wrap; }
+  .nav a { font-size:13px; color:var(--link,#4d8dff); text-decoration:none; padding:7px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+  .nav a:hover { border-color:#4d8dff; }
+  .section-h { font-size:13px; color:var(--txt-dim); letter-spacing:.04em; margin:0 2px 10px; }
+  .rank-table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .rank-table th { font-size:11px; color:var(--txt-dim); font-weight:500; text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); letter-spacing:.04em; }
+  .rank-table td { padding:13px 14px; border-bottom:1px solid var(--line); font-size:14px; }
+  .rank-table tr:last-child td { border-bottom:none; }
+  .c-rank { font-family:'Bebas Neue',sans-serif; font-size:19px; width:54px; color:var(--gold); }
+  .c-stock b { font-weight:700; } .c-stock .mem { display:block; font-size:11px; color:var(--txt-dim); margin-top:2px; }
+  .c-rate { font-weight:700; text-align:right; } .c-rate.up { color:var(--up); } .c-rate.down { color:var(--down); }
+  .c-delta { text-align:right; width:74px; }
+  .delta { font-size:12.5px; font-weight:700; padding:3px 8px; border-radius:7px; }
+  .delta.up { color:var(--up); background:rgba(255,77,109,.12); }
+  .delta.down { color:var(--down); background:rgba(77,141,255,.12); }
+  .delta.flat { color:var(--txt-dim); }
+  .delta.new { color:var(--gold); background:rgba(245,196,81,.13); font-size:11px; }
+  .chart-box { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 14px 12px; margin-top:24px; }
+  .trend { width:100%; height:auto; display:block; }
+  .trend .grid { stroke:var(--line); stroke-width:1; }
+  .trend .ylab { fill:var(--txt-dim); font-size:10px; text-anchor:end; font-family:'Bebas Neue',sans-serif; }
+  .trend .xlab { fill:var(--txt-dim); font-size:9px; text-anchor:middle; }
+  .legend { display:flex; flex-wrap:wrap; gap:9px 14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .lg { font-size:11.5px; color:var(--txt-dim); display:inline-flex; align-items:center; gap:5px; }
+  .lg i { width:11px; height:3px; border-radius:2px; display:inline-block; }
+  .note { font-size:12px; color:var(--txt-dim); margin-top:12px; font-style:italic; text-align:center; }
+  .foot { text-align:center; font-size:11px; color:var(--txt-dim); margin-top:24px; letter-spacing:.04em; }
+  .auto-stamp { text-align:center; font-size:10px; color:var(--txt-dim); margin-top:6px; opacity:.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-label">소수점 투자 모임 · 순위 변동</div>
+  <div class="title">RANKING<span class="kr">주차별 순위 변동</span></div>
+  <div class="date">2026.05.29 기준 · 1주차 누적 · 수익률 순</div>
+
+  <div class="nav"><a href="index.html">← 잔고 결산</a><a href="news.html">📰 종목 뉴스</a></div>
+
+  <div class="section-h">🏆 이번 주 순위</div>
+  <table class="rank-table">
+    <thead><tr><th>순위</th><th>종목</th><th>수익률</th><th>전주대비</th></tr></thead>
+    <tbody>
+    <tr><td class="c-rank">🥇 1</td><td class="c-stock"><b>현대차</b><span class="mem">성○</span></td><td class="c-rate up">+152.35%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">🥈 2</td><td class="c-stock"><b>신세계</b><span class="mem">정○</span></td><td class="c-rate up">+103.97%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">🥉 3</td><td class="c-stock"><b>이노스페이스</b><span class="mem">영○</span></td><td class="c-rate up">+37.82%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">4</td><td class="c-stock"><b>호텔신라</b><span class="mem">상○</span></td><td class="c-rate up">+23.32%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">5</td><td class="c-stock"><b>KB금융</b><span class="mem">주○</span></td><td class="c-rate up">+20.78%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">6</td><td class="c-stock"><b>NAVER</b><span class="mem">기○</span></td><td class="c-rate up">+1.27%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">7</td><td class="c-stock"><b>오스코텍</b><span class="mem">윤○</span></td><td class="c-rate down">−3.37%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    <tr><td class="c-rank">8</td><td class="c-stock"><b>카카오</b><span class="mem">필○</span></td><td class="c-rate down">−28.55%</td><td class="c-delta"><span class="delta new">NEW</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-h">📈 주차별 순위 추이</div>
+  <div class="chart-box">
+<svg viewBox="0 0 224 212" class="trend" role="img" aria-label="순위 추이">
+<line x1="30" y1="16.0" x2="210" y2="16.0" class="grid"/>
+<text x="22" y="19.0" class="ylab">1</text>
+<line x1="30" y1="40.0" x2="210" y2="40.0" class="grid"/>
+<text x="22" y="43.0" class="ylab">2</text>
+<line x1="30" y1="64.0" x2="210" y2="64.0" class="grid"/>
+<text x="22" y="67.0" class="ylab">3</text>
+<line x1="30" y1="88.0" x2="210" y2="88.0" class="grid"/>
+<text x="22" y="91.0" class="ylab">4</text>
+<line x1="30" y1="112.0" x2="210" y2="112.0" class="grid"/>
+<text x="22" y="115.0" class="ylab">5</text>
+<line x1="30" y1="136.0" x2="210" y2="136.0" class="grid"/>
+<text x="22" y="139.0" class="ylab">6</text>
+<line x1="30" y1="160.0" x2="210" y2="160.0" class="grid"/>
+<text x="22" y="163.0" class="ylab">7</text>
+<line x1="30" y1="184.0" x2="210" y2="184.0" class="grid"/>
+<text x="22" y="187.0" class="ylab">8</text>
+<text x="120.0" y="203" class="xlab">05-29</text>
+<circle cx="120.0" cy="16.0" r="3.5" fill="#ff4d6d"/>
+<circle cx="120.0" cy="40.0" r="3.5" fill="#4d8dff"/>
+<circle cx="120.0" cy="64.0" r="3.5" fill="#f5c451"/>
+<circle cx="120.0" cy="88.0" r="3.5" fill="#3ddc97"/>
+<circle cx="120.0" cy="112.0" r="3.5" fill="#b78bff"/>
+<circle cx="120.0" cy="136.0" r="3.5" fill="#ff9f43"/>
+<circle cx="120.0" cy="160.0" r="3.5" fill="#5ad1e6"/>
+<circle cx="120.0" cy="184.0" r="3.5" fill="#e85d9e"/>
+</svg>
+<div class="legend"><span class="lg"><i style="background:#ff4d6d"></i>현대차</span><span class="lg"><i style="background:#4d8dff"></i>신세계</span><span class="lg"><i style="background:#f5c451"></i>이노스페이스</span><span class="lg"><i style="background:#3ddc97"></i>호텔신라</span><span class="lg"><i style="background:#b78bff"></i>KB금융</span><span class="lg"><i style="background:#ff9f43"></i>NAVER</span><span class="lg"><i style="background:#5ad1e6"></i>오스코텍</span><span class="lg"><i style="background:#e85d9e"></i>카카오</span></div>
+    <div class="note">이번 주가 기준선이에요. 다음 주부터 순위 선이 이어집니다 🌱</div>
+  </div>
+
+  <div class="foot">매주 월요일 자동 갱신 · 순위는 수익률 기준 📊</div>
+  <div class="auto-stamp">자동 갱신: 2026-05-29 18:15 KST</div>
+
+</div>
+</body>
+</html>

@@ -20,8 +20,16 @@ warnings.filterwarnings("ignore")
 ROOT = Path(__file__).parent
 DATA = ROOT / "portfolio.json"
 OUT = ROOT / "index.html"
+HISTORY = ROOT / "history.json"
+RANK_OUT = ROOT / "rank.html"
 
 MEDALS = {1: "🥇", 2: "🥈", 3: "🥉"}
+
+# 추이 차트 종목별 라인 색상(최대 8개 순환).
+LINE_COLORS = [
+    "#ff4d6d", "#4d8dff", "#f5c451", "#3ddc97",
+    "#b78bff", "#ff9f43", "#5ad1e6", "#e85d9e",
+]
 
 
 def fmt(n):
@@ -122,6 +130,231 @@ def build_card(rank, r):
   </div>"""
 
 
+def week_key(dt):
+    """ISO 주차 키 — 같은 주 재실행 시 스냅샷을 덮어쓰기 위한 식별자. 예: '2026-W22'."""
+    y, w, _ = dt.isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+def load_history():
+    if not HISTORY.exists():
+        return {"snapshots": []}
+    try:
+        return json.loads(HISTORY.read_text(encoding="utf-8"))
+    except Exception:
+        return {"snapshots": []}
+
+
+def update_history(rows, now_kst):
+    """이번 주 순위 스냅샷을 history.json에 기록(같은 주면 갱신). 갱신된 history 반환."""
+    hist = load_history()
+    snaps = hist.setdefault("snapshots", [])
+    snap = {
+        "week": week_key(now_kst),
+        "date": now_kst.strftime("%Y-%m-%d"),
+        "ranks": [
+            {"stock": r["stock"], "member": r["member"],
+             "rank": i + 1, "rate": round(r["rate"], 2)}
+            for i, r in enumerate(rows)
+        ],
+    }
+    if snaps and snaps[-1]["week"] == snap["week"]:
+        snaps[-1] = snap  # 같은 주 재실행 → 덮어쓰기
+    else:
+        snaps.append(snap)
+    HISTORY.write_text(json.dumps(hist, ensure_ascii=False, indent=2), encoding="utf-8")
+    return hist
+
+
+def _delta_html(cur_rank, prev_rank):
+    """전주 대비 순위 변동 칩 HTML."""
+    if prev_rank is None:
+        return '<span class="delta new">NEW</span>'
+    diff = prev_rank - cur_rank  # 양수 = 순위 상승
+    if diff > 0:
+        return f'<span class="delta up">▲{diff}</span>'
+    if diff < 0:
+        return f'<span class="delta down">▼{abs(diff)}</span>'
+    return '<span class="delta flat">−</span>'
+
+
+def build_rank_table(rows, hist):
+    snaps = hist["snapshots"]
+    # 직전 주(이번 주 스냅샷을 제외한 마지막)의 종목별 순위.
+    prev = {}
+    if len(snaps) >= 2:
+        for e in snaps[-2]["ranks"]:
+            prev[e["stock"]] = e["rank"]
+    trs = []
+    for i, r in enumerate(rows):
+        rank = i + 1
+        medal = MEDALS.get(rank, "")
+        rank_cell = f'{medal} {rank}' if medal else f'{rank}'
+        rate_cls = "up" if r["rate"] >= 0 else "down"
+        delta = _delta_html(rank, prev.get(r["stock"]))
+        trs.append(
+            f'    <tr>'
+            f'<td class="c-rank">{rank_cell}</td>'
+            f'<td class="c-stock"><b>{r["stock"]}</b><span class="mem">{r["member"]}</span></td>'
+            f'<td class="c-rate {rate_cls}">{fmt_rate(r["rate"])}</td>'
+            f'<td class="c-delta">{delta}</td>'
+            f'</tr>'
+        )
+    return (
+        '  <table class="rank-table">\n'
+        '    <thead><tr><th>순위</th><th>종목</th><th>수익률</th><th>전주대비</th></tr></thead>\n'
+        '    <tbody>\n' + "\n".join(trs) + '\n    </tbody>\n'
+        '  </table>'
+    )
+
+
+def build_trend_svg(hist):
+    """주차별 순위 추이 라인 차트(인라인 SVG). 1위가 맨 위."""
+    snaps = hist["snapshots"]
+    # 색상은 현재(마지막) 스냅샷의 순위 순서대로 종목에 고정 배정.
+    stocks = [e["stock"] for e in snaps[-1]["ranks"]]
+    color = {s: LINE_COLORS[i % len(LINE_COLORS)] for i, s in enumerate(stocks)}
+    n = len(stocks)
+    W = len(snaps)
+
+    pad_l, pad_r, pad_t, pad_b = 30, 14, 16, 28
+    row_h = 24
+    plot_h = max((n - 1) * row_h, row_h)
+    plot_w = max(180, (W - 1) * 96) if W > 1 else 180
+    vb_w = pad_l + plot_w + pad_r
+    vb_h = pad_t + plot_h + pad_b
+
+    def x(i):
+        return pad_l + (plot_w / 2 if W == 1 else i / (W - 1) * plot_w)
+
+    def y(rank):
+        return pad_t + (0 if n == 1 else (rank - 1) / (n - 1) * plot_h)
+
+    parts = [f'<svg viewBox="0 0 {vb_w:.0f} {vb_h:.0f}" class="trend" role="img" aria-label="순위 추이">']
+    # 가로 격자 + 순위 라벨.
+    for rank in range(1, n + 1):
+        yy = y(rank)
+        parts.append(f'<line x1="{pad_l}" y1="{yy:.1f}" x2="{pad_l + plot_w}" y2="{yy:.1f}" class="grid"/>')
+        parts.append(f'<text x="{pad_l - 8}" y="{yy + 3:.1f}" class="ylab">{rank}</text>')
+    # 세로 주차 라벨.
+    for i, s in enumerate(snaps):
+        parts.append(f'<text x="{x(i):.1f}" y="{vb_h - 9:.0f}" class="xlab">{s["date"][5:]}</text>')
+    # 종목별 라인 + 점.
+    for stock in stocks:
+        pts = []
+        for i, s in enumerate(snaps):
+            rk = next((e["rank"] for e in s["ranks"] if e["stock"] == stock), None)
+            if rk is not None:
+                pts.append((x(i), y(rk)))
+        if not pts:
+            continue
+        c = color[stock]
+        if len(pts) >= 2:
+            poly = " ".join(f"{px:.1f},{py:.1f}" for px, py in pts)
+            parts.append(f'<polyline points="{poly}" fill="none" stroke="{c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>')
+        for px, py in pts:
+            parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="3.5" fill="{c}"/>')
+    parts.append('</svg>')
+
+    legend = '<div class="legend">' + "".join(
+        f'<span class="lg"><i style="background:{color[s]}"></i>{s}</span>' for s in stocks
+    ) + '</div>'
+    return "\n".join(parts) + "\n" + legend
+
+
+RANK_CSS = """
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --bg:#0d1117; --panel:#161b22; --panel-2:#1c232d; --line:#2a313c; --txt:#e7ecf3; --txt-dim:#8b96a5; --up:#ff4d6d; --down:#4d8dff; --gold:#f5c451; }
+  body { background: radial-gradient(1200px 600px at 80% -10%, rgba(245,196,81,.06), transparent 60%), radial-gradient(900px 500px at -10% 110%, rgba(77,141,255,.06), transparent 60%), var(--bg); font-family:'IBM Plex Sans KR',sans-serif; color:var(--txt); min-height:100vh; display:flex; justify-content:center; padding:32px 18px 56px; }
+  .wrap { width:100%; max-width:560px; }
+  .top-label { font-size:12px; letter-spacing:.22em; color:var(--txt-dim); text-transform:uppercase; margin-bottom:6px; }
+  .title { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:.95; letter-spacing:.02em; }
+  .title .kr { font-family:'IBM Plex Sans KR'; font-weight:700; font-size:24px; display:block; letter-spacing:-.01em; margin-top:4px; }
+  .date { font-size:12px; color:var(--txt-dim); margin-top:8px; }
+  .nav { margin:14px 0 24px; display:flex; gap:8px; flex-wrap:wrap; }
+  .nav a { font-size:13px; color:var(--link,#4d8dff); text-decoration:none; padding:7px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+  .nav a:hover { border-color:#4d8dff; }
+  .section-h { font-size:13px; color:var(--txt-dim); letter-spacing:.04em; margin:0 2px 10px; }
+  .rank-table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .rank-table th { font-size:11px; color:var(--txt-dim); font-weight:500; text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); letter-spacing:.04em; }
+  .rank-table td { padding:13px 14px; border-bottom:1px solid var(--line); font-size:14px; }
+  .rank-table tr:last-child td { border-bottom:none; }
+  .c-rank { font-family:'Bebas Neue',sans-serif; font-size:19px; width:54px; color:var(--gold); }
+  .c-stock b { font-weight:700; } .c-stock .mem { display:block; font-size:11px; color:var(--txt-dim); margin-top:2px; }
+  .c-rate { font-weight:700; text-align:right; } .c-rate.up { color:var(--up); } .c-rate.down { color:var(--down); }
+  .c-delta { text-align:right; width:74px; }
+  .delta { font-size:12.5px; font-weight:700; padding:3px 8px; border-radius:7px; }
+  .delta.up { color:var(--up); background:rgba(255,77,109,.12); }
+  .delta.down { color:var(--down); background:rgba(77,141,255,.12); }
+  .delta.flat { color:var(--txt-dim); }
+  .delta.new { color:var(--gold); background:rgba(245,196,81,.13); font-size:11px; }
+  .chart-box { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 14px 12px; margin-top:24px; }
+  .trend { width:100%; height:auto; display:block; }
+  .trend .grid { stroke:var(--line); stroke-width:1; }
+  .trend .ylab { fill:var(--txt-dim); font-size:10px; text-anchor:end; font-family:'Bebas Neue',sans-serif; }
+  .trend .xlab { fill:var(--txt-dim); font-size:9px; text-anchor:middle; }
+  .legend { display:flex; flex-wrap:wrap; gap:9px 14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .lg { font-size:11.5px; color:var(--txt-dim); display:inline-flex; align-items:center; gap:5px; }
+  .lg i { width:11px; height:3px; border-radius:2px; display:inline-block; }
+  .note { font-size:12px; color:var(--txt-dim); margin-top:12px; font-style:italic; text-align:center; }
+  .foot { text-align:center; font-size:11px; color:var(--txt-dim); margin-top:24px; letter-spacing:.04em; }
+  .auto-stamp { text-align:center; font-size:10px; color:var(--txt-dim); margin-top:6px; opacity:.6; }
+"""
+
+
+def build_rank_html(rows, hist, now_kst):
+    date_display = now_kst.strftime("%Y.%m.%d")
+    stamp = now_kst.strftime("%Y-%m-%d %H:%M KST")
+    table = build_rank_table(rows, hist)
+    n_weeks = len(hist["snapshots"])
+    if n_weeks >= 2:
+        chart = (
+            '  <div class="section-h">📈 주차별 순위 추이 (1위가 맨 위)</div>\n'
+            f'  <div class="chart-box">\n{build_trend_svg(hist)}\n  </div>'
+        )
+    else:
+        chart = (
+            '  <div class="section-h">📈 주차별 순위 추이</div>\n'
+            f'  <div class="chart-box">\n{build_trend_svg(hist)}\n'
+            '    <div class="note">이번 주가 기준선이에요. 다음 주부터 순위 선이 이어집니다 🌱</div>\n'
+            '  </div>'
+        )
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>순위 변동 · {date_display}</title>
+<meta property="og:title" content="순위 변동 {date_display}">
+<meta property="og:description" content="우리 모임 종목별 주차 순위 변동">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>{RANK_CSS}</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-label">소수점 투자 모임 · 순위 변동</div>
+  <div class="title">RANKING<span class="kr">주차별 순위 변동</span></div>
+  <div class="date">{date_display} 기준 · {n_weeks}주차 누적 · 수익률 순</div>
+
+  <div class="nav"><a href="index.html">← 잔고 결산</a><a href="news.html">📰 종목 뉴스</a></div>
+
+  <div class="section-h">🏆 이번 주 순위</div>
+{table}
+
+{chart}
+
+  <div class="foot">매주 월요일 자동 갱신 · 순위는 수익률 기준 📊</div>
+  <div class="auto-stamp">자동 갱신: {stamp}</div>
+
+</div>
+</body>
+</html>
+"""
+
+
 CSS = """
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root { --bg:#0d1117; --panel:#161b22; --panel-2:#1c232d; --line:#2a313c; --txt:#e7ecf3; --txt-dim:#8b96a5; --up:#ff4d6d; --up-soft:rgba(255,77,109,.12); --down:#4d8dff; --down-soft:rgba(77,141,255,.12); --gold:#f5c451; }
@@ -131,8 +364,8 @@ CSS = """
   .title { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:.95; letter-spacing:.02em; margin-bottom:2px; }
   .title .kr { font-family:'IBM Plex Sans KR'; font-weight:700; font-size:26px; display:block; letter-spacing:-.01em; margin-top:4px; }
   .date { font-size:12px; color:var(--txt-dim); margin-top:8px; }
-  .nav { margin:16px 0 4px; }
-  .nav a { display:inline-block; font-size:13px; color:var(--gold); text-decoration:none; padding:7px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+  .nav { margin:16px 0 4px; display:flex; gap:8px; flex-wrap:wrap; }
+  .nav a { font-size:13px; color:var(--gold); text-decoration:none; padding:7px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
   .nav a:hover { border-color:var(--gold); }
   .summary { margin:22px 0 26px; padding:20px 22px; background:linear-gradient(135deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:18px; position:relative; overflow:hidden; }
   .summary::after { content:""; position:absolute; right:-40px; top:-40px; width:160px; height:160px; background:radial-gradient(circle,rgba(255,77,109,.25),transparent 70%); }
@@ -201,7 +434,7 @@ def build_html(rows, now_kst):
   <div class="title">PORTFOLIO<span class="kr">우리 모임 잔고 결산</span></div>
   <div class="date">{date_display} 기준 · 8인 참여</div>
 
-  <div class="nav"><a href="news.html">📰 오늘의 종목 뉴스 보기 →</a></div>
+  <div class="nav"><a href="news.html">📰 오늘의 종목 뉴스</a><a href="rank.html">📊 순위 변동</a></div>
 
 {cards}
 
@@ -220,8 +453,14 @@ def main():
     now = datetime.now(ZoneInfo("Asia/Seoul"))
     html = build_html(rows, now)
     OUT.write_text(html, encoding="utf-8")
+
+    # 이번 주 순위 스냅샷 기록 후 순위 변동 페이지 생성.
+    hist = update_history(rows, now)
+    RANK_OUT.write_text(build_rank_html(rows, hist, now), encoding="utf-8")
+
     total_pl = sum(r["pl"] for r in rows)
     print(f"✓ {OUT.name} 생성")
+    print(f"✓ {RANK_OUT.name} 생성 — {len(hist['snapshots'])}주차 누적")
     print(f"  {now.strftime('%Y-%m-%d %H:%M KST')}")
     print(f"  총 손익 {fmt_pl(total_pl)}")
 

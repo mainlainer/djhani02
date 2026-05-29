@@ -91,8 +91,8 @@ CSS = """
   .title { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:.95; letter-spacing:.02em; }
   .title .kr { font-family:'IBM Plex Sans KR'; font-weight:700; font-size:24px; display:block; letter-spacing:-.01em; margin-top:4px; }
   .date { font-size:12px; color:var(--txt-dim); margin-top:8px; }
-  .nav { margin:14px 0 26px; }
-  .nav a { display:inline-block; font-size:13px; color:var(--link); text-decoration:none; padding:7px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+  .nav { margin:14px 0 26px; display:flex; gap:8px; flex-wrap:wrap; }
+  .nav a { font-size:13px; color:var(--link); text-decoration:none; padding:7px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
   .nav a:hover { border-color:var(--link); }
   .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin-bottom:14px; position:relative; overflow:hidden; animation:rise .5s both; }
   .card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); }
@@ -160,7 +160,7 @@ def build_html(cards_html, now_kst):
   <div class="title">NEWS<span class="kr">오늘의 종목 소식</span></div>
   <div class="date">{date_display} 기준 · 종목별 최신 1건</div>
 
-  <div class="nav"><a href="index.html">← 포트폴리오 잔고 결산 보기</a></div>
+  <div class="nav"><a href="index.html">← 잔고 결산</a><a href="rank.html">📊 순위 변동</a></div>
 
 {cards_html}
 
