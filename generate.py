@@ -2,18 +2,18 @@
 """
 투자모임 포트폴리오 자동 갱신기 (클라우드 버전)
 
-portfolio.json 읽기 → yfinance로 현재가 조회 → index.html 생성
+portfolio.json 읽기 → 네이버 증권에서 현재가 조회 → index.html 생성
 
+시세는 한국거래소(KRX) 종가 기준으로, 키움/네이버 증권과 동일합니다.
 GitHub Actions에서 매주 월요일 9AM KST에 자동 실행.
 """
 
 import json
+import urllib.request
 import warnings
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
-
-import yfinance as yf
 
 warnings.filterwarnings("ignore")
 
@@ -38,14 +38,38 @@ def fmt_rate(r):
     return f"{sign}{abs(r):.2f}%"
 
 
-def fetch_price(code: str, market: str) -> float:
-    """yfinance로 종가 조회. KS=KOSPI, KQ=KOSDAQ"""
-    ticker = f"{code}.{market}"
-    t = yf.Ticker(ticker)
-    h = t.history(period="5d")
+def _naver_price(code: str) -> float:
+    """네이버 증권 종가(KRX 기준 — 키움·네이버와 동일)."""
+    url = f"https://m.stock.naver.com/api/stock/{code}/integration"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        data = json.loads(resp.read())
+    deals = data.get("dealTrendInfos")
+    if deals and deals[0].get("closePrice"):
+        return float(deals[0]["closePrice"].replace(",", ""))
+    for item in data.get("totalInfos", []):
+        if item.get("code") == "closePrice":
+            return float(str(item["value"]).replace(",", ""))
+    raise RuntimeError(f"네이버 응답에 종가 없음: {code}")
+
+
+def _yahoo_price(code: str, market: str) -> float:
+    """야후(yfinance) 종가 — 네이버 실패 시 백업. KS=KOSPI, KQ=KOSDAQ."""
+    import yfinance as yf  # 백업 경로에서만 필요
+
+    h = yf.Ticker(f"{code}.{market}").history(period="5d")
     if h.empty:
-        raise RuntimeError(f"시세 조회 실패: {ticker}")
+        raise RuntimeError(f"야후 시세 없음: {code}.{market}")
     return float(h["Close"].iloc[-1])
+
+
+def fetch_price(code: str, market: str = "") -> float:
+    """현재가 조회: 네이버(주력) → 실패 시 야후(백업)."""
+    try:
+        return _naver_price(code)
+    except Exception as e:
+        print(f"  ⚠️  네이버 조회 실패({code}): {e} — 야후로 폴백")
+        return _yahoo_price(code, market)
 
 
 def build_rows(members):

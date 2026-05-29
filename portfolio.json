@@ -1,13 +1,78 @@
 {
   "members": [
-    {"name": "성○",         "stock": "현대차",       "code": "005380", "market": "KS", "qty": 0.42,   "avg_price": 214195, "buy_amount": 89962},
-    {"name": "정○",         "stock": "신세계",       "code": "004170", "market": "KS", "qty": 0.61,   "avg_price": 147895, "buy_amount": 90216},
-    {"name": "영○",         "stock": "이노스페이스", "code": "462350", "market": "KQ", "qty": 0.04,   "avg_price": 100000, "buy_amount": 4000},
-    {"name": "상○",         "stock": "호텔신라",     "code": "008770", "market": "KS", "qty": 0.0019, "avg_price": 47368,  "buy_amount": 90},
-    {"name": "주○",         "stock": "KB금융",       "code": "105560", "market": "KS", "qty": 0.85,   "avg_price": 105948, "buy_amount": 90056, "mine": true},
-    {"name": "기○",         "stock": "NAVER",        "code": "035420", "market": "KS", "qty": 0.41,   "avg_price": 219773, "buy_amount": 90107},
-    {"name": "윤○",         "stock": "오스코텍",     "code": "039200", "market": "KQ", "qty": 0.039,  "avg_price": 56308,  "buy_amount": 2196},
-    {"name": "필○",         "stock": "카카오",       "code": "035720", "market": "KS", "qty": 0.55,   "avg_price": 56187,  "buy_amount": 30903}
+    {
+      "name": "성○",
+      "stock": "현대차",
+      "code": "005380",
+      "market": "KS",
+      "qty": 0.335335,
+      "avg_price": 268275,
+      "buy_amount": 89962
+    },
+    {
+      "name": "정○",
+      "stock": "신세계",
+      "code": "004170",
+      "market": "KS",
+      "qty": 0.35319,
+      "avg_price": 255432,
+      "buy_amount": 90216
+    },
+    {
+      "name": "영○",
+      "stock": "이노스페이스",
+      "code": "462350",
+      "market": "KQ",
+      "qty": 0.359153,
+      "avg_price": 11137,
+      "buy_amount": 4000
+    },
+    {
+      "name": "상○",
+      "stock": "호텔신라",
+      "code": "008770",
+      "market": "KS",
+      "qty": 0.002007,
+      "avg_price": 44843,
+      "buy_amount": 90
+    },
+    {
+      "name": "주○",
+      "stock": "KB금융",
+      "code": "105560",
+      "market": "KS",
+      "qty": 0.726573,
+      "avg_price": 123946,
+      "buy_amount": 90056,
+      "mine": true
+    },
+    {
+      "name": "기○",
+      "stock": "NAVER",
+      "code": "035420",
+      "market": "KS",
+      "qty": 0.445117,
+      "avg_price": 202434,
+      "buy_amount": 90107
+    },
+    {
+      "name": "윤○",
+      "stock": "오스코텍",
+      "code": "039200",
+      "market": "KQ",
+      "qty": 0.050644,
+      "avg_price": 43362,
+      "buy_amount": 2196
+    },
+    {
+      "name": "필○",
+      "stock": "카카오",
+      "code": "035720",
+      "market": "KS",
+      "qty": 0.550623,
+      "avg_price": 56124,
+      "buy_amount": 30903
+    }
   ],
-  "_comment": "qty와 avg_price만 정확하면 매입금액·평가금액·손익 모두 자동 계산. 새로 매수하면 이 파일만 수정해서 commit하면 즉시 반영됨."
+  "_comment": "qty(보유수량)는 2026-05-29 키움 소수점잔고 평가금액 ÷ 네이버 종가로 역산한 실제 보유주수. 시세는 매주 네이버에서 자동 조회되어 평가·손익·등수 갱신. 새 매수/매도 시 qty와 buy_amount만 수정."
 }
