@@ -198,16 +198,6 @@ def build_html(rows, now_kst):
   <div class="title">PORTFOLIO<span class="kr">우리 모임 잔고 결산</span></div>
   <div class="date">{date_display} 기준 · 8인 참여</div>
 
-  <div class="summary {summary_class}">
-    <div class="lbl">총 평가손익</div>
-    <div class="total">{fmt_pl(total_pl)}</div>
-    <div class="rate">{arrow} {fmt_rate(total_rate)}</div>
-    <div class="sub">
-      <div><span class="k">총 매입금액</span><span class="v">{fmt(total_buy)}원</span></div>
-      <div><span class="k">총 평가금액</span><span class="v">{fmt(total_cur)}원</span></div>
-    </div>
-  </div>
-
 {cards}
 
   <div class="foot">투자의 길, 함께 떠들면 덜 외로워요 🤝</div>
