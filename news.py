@@ -19,10 +19,20 @@ ROOT = Path(__file__).parent
 DATA = ROOT / "portfolio.json"
 OUT = ROOT / "news.html"
 
+# 기사에서 쓰이는 종목 별칭(표기 차이 보정). portfolio.json의 stock 이름은 기본 포함.
+ALIASES = {
+    "035420": ["네이버"],       # NAVER → 기사에선 보통 '네이버'
+    "105560": ["KB", "국민"],  # KB금융 → KB금융지주/국민은행 등
+}
 
-def fetch_latest_news(code: str):
-    """네이버 증권 종목 뉴스 최신 1건. 실패 시 None."""
-    url = f"https://m.stock.naver.com/api/news/stock/{code}?pageSize=5&page=1"
+
+def fetch_latest_news(code: str, keywords=None):
+    """네이버 증권 종목 뉴스 1건. 실패 시 None.
+
+    keywords가 주어지면 제목·본문에 종목명이 포함된 최신 기사를 우선 선택하고,
+    그런 기사가 없으면 최신 기사로 폴백한다(반환값 matched=False).
+    """
+    url = f"https://m.stock.naver.com/api/news/stock/{code}?pageSize=20&page=1"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -40,15 +50,28 @@ def fetch_latest_news(code: str):
     if not items:
         return None
 
-    # datetime(YYYYMMDDHHMM) 기준 최신순 정렬 후 첫 건.
+    # datetime(YYYYMMDDHHMM) 기준 최신순 정렬.
     items.sort(key=lambda it: it.get("datetime", ""), reverse=True)
-    it = items[0]
+
+    # 종목명 포함 기사 우선 → 없으면 최신 기사로 폴백.
+    matched = True
+    it = None
+    if keywords:
+        for cand in items:
+            text = (cand.get("titleFull") or cand.get("title") or "") + (cand.get("body") or "")
+            if any(kw in text for kw in keywords):
+                it = cand
+                break
+    if it is None:
+        it = items[0]
+        matched = not keywords  # 키워드가 없었으면 매칭 개념 자체가 없음
     return {
         "title": it.get("titleFull") or it.get("title", "").strip(),
         "body": (it.get("body") or "").strip(),
         "office": it.get("officeName", ""),
         "datetime": it.get("datetime", ""),
         "url": it.get("mobileNewsUrl", ""),
+        "matched": matched,
     }
 
 
@@ -154,9 +177,15 @@ def main():
     data = json.loads(DATA.read_text(encoding="utf-8"))
     cards = []
     for m in data["members"]:
-        news = fetch_latest_news(m["code"])
-        status = "✓" if news else "✗"
-        print(f"  {status} {m['stock']} ({m['code']})")
+        keywords = [m["stock"]] + ALIASES.get(m["code"], [])
+        news = fetch_latest_news(m["code"], keywords)
+        if not news:
+            mark = "✗"
+        elif news["matched"]:
+            mark = "✓"
+        else:
+            mark = "≈"  # 폴백(시장 뉴스)
+        print(f"  {mark} {m['stock']} ({m['code']})")
         cards.append(build_card(m, news))
     now = datetime.now(ZoneInfo("Asia/Seoul"))
     html = build_html("\n\n".join(cards), now)
