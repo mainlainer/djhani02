@@ -62,49 +62,49 @@
           "stock": "현대차",
           "member": "성○",
           "rank": 1,
-          "rate": 169.5
+          "rate": 179.56
         },
         {
           "stock": "신세계",
           "member": "정○",
           "rank": 2,
-          "rate": 101.62
+          "rate": 102.01
+        },
+        {
+          "stock": "NAVER",
+          "member": "기○",
+          "rank": 3,
+          "rate": 34.12
         },
         {
           "stock": "이노스페이스",
           "member": "영○",
-          "rank": 3,
-          "rate": 38.09
-        },
-        {
-          "stock": "호텔신라",
-          "member": "상○",
           "rank": 4,
-          "rate": 22.87
+          "rate": 24.81
         },
         {
           "stock": "KB금융",
           "member": "주○",
           "rank": 5,
-          "rate": 21.5
+          "rate": 22.71
         },
         {
-          "stock": "NAVER",
-          "member": "기○",
+          "stock": "호텔신라",
+          "member": "상○",
           "rank": 6,
-          "rate": 15.59
+          "rate": 20.87
         },
         {
           "stock": "오스코텍",
           "member": "윤○",
           "rank": 7,
-          "rate": -3.02
+          "rate": -6.48
         },
         {
           "stock": "카카오",
           "member": "필○",
           "rank": 8,
-          "rate": -25.25
+          "rate": -23.92
         }
       ]
     }
