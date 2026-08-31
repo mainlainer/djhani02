@@ -755,6 +755,60 @@
           "rate": -46.85
         }
       ]
+    },
+    {
+      "week": "2026-W36",
+      "date": "2026-08-31",
+      "ranks": [
+        {
+          "stock": "신세계",
+          "member": "정○",
+          "rank": 1,
+          "rate": 58.75
+        },
+        {
+          "stock": "현대차",
+          "member": "성○",
+          "rank": 2,
+          "rate": 48.91
+        },
+        {
+          "stock": "KB금융",
+          "member": "주○",
+          "rank": 3,
+          "rate": 38.45
+        },
+        {
+          "stock": "NAVER",
+          "member": "기○",
+          "rank": 4,
+          "rate": 8.92
+        },
+        {
+          "stock": "호텔신라",
+          "member": "상○",
+          "rank": 5,
+          "rate": -4.11
+        },
+        {
+          "stock": "오스코텍",
+          "member": "윤○",
+          "rank": 6,
+          "rate": -17.44
+        },
+        {
+          "stock": "카카오",
+          "member": "필○",
+          "rank": 7,
+          "rate": -34.34
+        },
+        {
+          "stock": "이노스페이스",
+          "member": "영○",
+          "rank": 8,
+          "rate": -45.77
+        }
+      ]
     }
   ]
 }
